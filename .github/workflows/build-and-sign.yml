@@ -60,6 +60,7 @@ jobs:
       
       - name: Clean up signing key
         if: always()
+        shell: bash
         run: rm -f signing.key
       
       - name: Upload artifacts

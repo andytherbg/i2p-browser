@@ -1,14 +1,38 @@
 {
-  "name": "workspace",
+  "name": "i2p-browser",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "I2P Browser - A secure browser with configurable security levels",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsc && electron .",
+    "build": "tsc",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux"
   },
-  "keywords": [],
+  "build": {
+    "appId": "com.i2pbrowser.app",
+    "productName": "I2P Browser",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/index.html"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "keywords": ["i2p", "browser", "privacy", "security"],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@types/node": "^24.6.2",
     "electron": "^38.2.0",

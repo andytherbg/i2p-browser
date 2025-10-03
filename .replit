@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "I2P Browser"
+args = "Build"
 
 [[workflows.workflow]]
-name = "I2P Browser"
+name = "Build"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm run build"
 
 [workflows.workflow.metadata]
-outputType = "vnc"
+outputType = "console"

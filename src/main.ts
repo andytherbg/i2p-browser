@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session } from 'electron';
 import * as path from 'path';
 import { ConfigManager, SecurityLevel } from './config';
+import { applyI2PProxyFlags, enforceViewportBuckets } from './i2p-proxy';
 
 let mainWindow: BrowserWindow | null = null;
 let configManager: ConfigManager;
@@ -56,6 +57,8 @@ function createWindow(): void {
     },
     title: 'I2P Browser'
   });
+
+  enforceViewportBuckets(mainWindow);
 
   mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
 
@@ -147,6 +150,8 @@ function updateSecurityMenu(): void {
 }
 
 configManager = new ConfigManager();
+
+applyI2PProxyFlags(4444, 4447);
 
 applyChromiumFlags();
 

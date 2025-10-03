@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Protection Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .pass { background: #d4edda; color: #155724; }
+    .fail { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1>I2P Browser Privacy Protection Tests</h1>
+  
+  <div class="test-section">
+    <h2>WebRTC Test</h2>
+    <div id="webrtc-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Canvas Fingerprinting Test</h2>
+    <canvas id="test-canvas" width="200" height="50"></canvas>
+    <button id="canvas-read-btn">Read Canvas Data</button>
+    <div id="canvas-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Font Enumeration Test</h2>
+    <button id="font-test-btn">Test Font Access</button>
+    <div id="font-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Font List Test</h2>
+    <div id="font-list-result" class="result"></div>
+  </div>
+
+  <script>
+    function testWebRTC() {
+      const resultEl = document.getElementById('webrtc-result');
+      const hasRTCPeerConnection = typeof RTCPeerConnection !== 'undefined';
+      const hasWebkitRTCPeerConnection = typeof webkitRTCPeerConnection !== 'undefined';
+      const hasMozRTCPeerConnection = typeof mozRTCPeerConnection !== 'undefined';
+      
+      const webrtcAvailable = hasRTCPeerConnection || hasWebkitRTCPeerConnection || hasMozRTCPeerConnection;
+      
+      if (webrtcAvailable) {
+        resultEl.className = 'result fail';
+        resultEl.textContent = 'FAIL: WebRTC is available (potential IP leak)';
+      } else {
+        resultEl.className = 'result pass';
+        resultEl.textContent = 'PASS: WebRTC is not available';
+      }
+      
+      resultEl.setAttribute('data-webrtc-available', webrtcAvailable);
+    }
+
+    function setupCanvasTest() {
+      const canvas = document.getElementById('test-canvas');
+      const ctx = canvas.getContext('2d');
+      const btn = document.getElementById('canvas-read-btn');
+      const resultEl = document.getElementById('canvas-result');
+      
+      ctx.fillStyle = 'rgb(255, 0, 0)';
+      ctx.fillRect(10, 10, 50, 30);
+      ctx.fillStyle = 'rgb(0, 255, 0)';
+      ctx.fillText('Test', 70, 30);
+      
+      btn.addEventListener('click', () => {
+        try {
+          const dataUrl = canvas.toDataURL();
+          resultEl.className = 'result fail';
+          resultEl.textContent = 'FAIL: Canvas read succeeded without permission';
+          resultEl.setAttribute('data-canvas-blocked', 'false');
+        } catch (error) {
+          resultEl.className = 'result pass';
+          resultEl.textContent = 'PASS: Canvas read blocked - ' + error.message;
+          resultEl.setAttribute('data-canvas-blocked', 'true');
+        }
+      });
+    }
+
+    async function testFonts() {
+      const btn = document.getElementById('font-test-btn');
+      const resultEl = document.getElementById('font-result');
+      
+      btn.addEventListener('click', async () => {
+        try {
+          if (!document.fonts || !document.fonts.check) {
+            resultEl.className = 'result pass';
+            resultEl.textContent = 'PASS: Font API not available';
+            resultEl.setAttribute('data-fonts-available', 'false');
+            return;
+          }
+          
+          const testFonts = [
+            'Arial',
+            'Times New Roman',
+            'Comic Sans MS',
+            'Impact',
+            'Helvetica'
+          ];
+          
+          const available = [];
+          for (const font of testFonts) {
+            if (document.fonts.check(`12px "${font}"`)) {
+              available.push(font);
+            }
+          }
+          
+          resultEl.textContent = `Available fonts: ${available.join(', ')}`;
+          resultEl.setAttribute('data-font-count', available.length.toString());
+          
+          if (available.length <= 4) {
+            resultEl.className = 'result pass';
+            resultEl.textContent = 'PASS: Minimal font list - ' + resultEl.textContent;
+          } else {
+            resultEl.className = 'result fail';
+            resultEl.textContent = 'FAIL: Too many fonts available - ' + resultEl.textContent;
+          }
+        } catch (error) {
+          resultEl.className = 'result pass';
+          resultEl.textContent = 'PASS: Font access blocked - ' + error.message;
+          resultEl.setAttribute('data-fonts-blocked', 'true');
+        }
+      });
+    }
+
+    function testComputedFontFamily() {
+      const resultEl = document.getElementById('font-list-result');
+      const testDiv = document.createElement('div');
+      testDiv.style.fontFamily = 'Comic Sans MS, Arial, sans-serif';
+      document.body.appendChild(testDiv);
+      
+      const computedFont = window.getComputedStyle(testDiv).fontFamily;
+      document.body.removeChild(testDiv);
+      
+      resultEl.textContent = `Computed font family: ${computedFont}`;
+      resultEl.setAttribute('data-computed-font', computedFont);
+      
+      if (computedFont.includes('Arial')) {
+        resultEl.className = 'result pass';
+        resultEl.textContent = 'PASS: Font spoofing active - ' + resultEl.textContent;
+      } else {
+        resultEl.className = 'result fail';
+        resultEl.textContent = 'FAIL: No font spoofing detected - ' + resultEl.textContent;
+      }
+    }
+
+    window.addEventListener('load', () => {
+      testWebRTC();
+      setupCanvasTest();
+      testFonts();
+      testComputedFontFamily();
+    });
+  </script>
+</body>
+</html>

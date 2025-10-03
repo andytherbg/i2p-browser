@@ -2,7 +2,21 @@
 
 ## Overview
 
-I2P Browser is a privacy-focused desktop browser application built with Electron and TypeScript. It provides configurable security levels and proxy support specifically designed for I2P network browsing. The application allows users to customize Chromium flags, configure proxy settings, and enforce Content Security Policies to enhance privacy and security.
+I2P Browser is a privacy-focused desktop browser application built with Electron and TypeScript. It provides configurable security levels and proxy support specifically designed for I2P network browsing. The application features advanced anti-fingerprinting protections including per-site JavaScript control, canvas fingerprinting protection, font access control, and WebRTC blocking. Users can customize Chromium flags, configure proxy settings, and enforce Content Security Policies to enhance privacy and security.
+
+## Recent Changes (October 2025)
+
+### Advanced Privacy Features
+- **Per-Site JavaScript Toggle**: NoScript-lite functionality allowing users to enable/disable JavaScript per domain
+- **Canvas Fingerprinting Protection**: Intercepts canvas read operations (toDataURL, getImageData) with user consent dialogs
+- **Font Access Control**: Restricts font enumeration to minimal list (Arial, Times New Roman, Courier New, Verdana) with permission prompts
+- **New Identity Function**: One-click clearing of all permissions, cookies, cache, and session data (Ctrl+Shift+N)
+- **I2P Portal Menu**: Quick access menu for common I2P sites (Postman HQ, Stats, IRC, Forum)
+
+### Testing Infrastructure
+- **E2E Tests**: Playwright-based end-to-end tests verifying WebRTC unavailability, canvas blocking, and minimal font list
+- **Test Page**: Comprehensive test page validating all privacy protections at runtime
+- **Test Commands**: `npm run test:e2e` for automated tests, `npm run test:all` for full test suite
 
 ## User Preferences
 
@@ -60,11 +74,21 @@ Preferred communication style: Simple, everyday language.
 2. **Proxy Configuration**: Support for I2P HTTP proxy (default 127.0.0.1:4444) and SOCKS5
 3. **Content Security Policy**: Runtime CSP header injection via webRequest API
 4. **Renderer Process Isolation**: Electron's context isolation with controlled API exposure
+5. **Script Injection Protection**: Runtime JavaScript injection to intercept fingerprinting APIs
+6. **Permission System**: Per-site permissions stored persistently for JavaScript, canvas, and font access
 
 **Security Levels:**
 - Standard: Default browser behavior
 - Safer: Enhanced privacy protections
 - Safest: Maximum security (may break some sites)
+
+**Anti-Fingerprinting Protections:**
+- WebRTC completely disabled (prevents IP leaks)
+- Canvas read operations require user consent
+- Font enumeration limited to 4 safe fonts
+- User agent normalized to Firefox 102
+- Viewport bucketed to common resolutions
+- Per-site JavaScript control
 
 ### Build System
 
@@ -88,16 +112,28 @@ Preferred communication style: Simple, everyday language.
 - Window lifecycle management
 - Configuration loading and application
 - Proxy and security policy setup
-- Menu system (not fully shown in provided code)
+- IPC handlers for permission requests
+- Menu system with security controls
+- Script injection for privacy protection
 
 **Preload Script** (`preload.ts`):
 - Controlled bridge between main and renderer processes
-- Exposes minimal API surface (`i2pBrowser.version`)
+- Exposes privacy APIs: canvas/font permissions, JavaScript toggle, New Identity, I2P portals
 - Maintains security through context isolation
 
 **Renderer Process** (`index.html`):
 - User interface and browser chrome
 - Communicates with main process via exposed APIs
+
+**Privacy Protection Scripts** (`privacy-protection.ts`):
+- Canvas API interception (toDataURL, getImageData)
+- Font API spoofing (document.fonts.check, getComputedStyle)
+- Permission state management in renderer context
+
+**Permissions Manager** (`permissions.ts`):
+- Per-domain permission storage (JavaScript, canvas, fonts)
+- Persistent JSON-based configuration
+- Toggle and query APIs for site-specific settings
 
 ## External Dependencies
 

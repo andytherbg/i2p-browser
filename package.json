@@ -8,6 +8,9 @@
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux"
@@ -41,11 +44,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@playwright/test": "^1.55.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.6.2",
     "electron": "^38.2.0",
     "electron-builder": "^26.0.12",
     "jest": "^30.2.0",
+    "playwright": "^1.55.1",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.3"
   }

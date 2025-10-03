@@ -1,10 +1,12 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, session, dialog, ipcMain } from 'electron';
 import * as path from 'path';
 import { ConfigManager, SecurityLevel } from './config';
 import { applyI2PProxyFlags, enforceViewportBuckets } from './i2p-proxy';
+import { PermissionsManager } from './permissions';
 
 let mainWindow: BrowserWindow | null = null;
 let configManager: ConfigManager;
+let permissionsManager: PermissionsManager;
 
 function applyChromiumFlags(): void {
   const prefs = configManager.getPreferences();
@@ -60,6 +62,32 @@ function createWindow(): void {
 
   enforceViewportBuckets(mainWindow);
 
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'media') {
+      callback(false);
+      return;
+    }
+    callback(true);
+  });
+  
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    try {
+      const requestUrl = new URL(details.url);
+      const permissions = permissionsManager.getPermissions(details.url);
+      
+      const responseHeaders = details.responseHeaders || {};
+      
+      if (!permissions.javascript && details.resourceType === 'mainFrame') {
+        responseHeaders['Content-Security-Policy'] = ["script-src 'none'; object-src 'none'"];
+      }
+      
+      callback({ responseHeaders });
+    } catch (error) {
+      console.error('Error processing headers:', error);
+      callback({});
+    }
+  });
+
   mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
 
   mainWindow.on('closed', () => {
@@ -75,10 +103,61 @@ function createMenu(): void {
       label: 'File',
       submenu: [
         {
+          label: 'New Identity',
+          accelerator: 'CmdOrCtrl+Shift+N',
+          click: () => {
+            permissionsManager.clearAllPermissions();
+            if (mainWindow) {
+              mainWindow.webContents.session.clearCache();
+              mainWindow.webContents.session.clearStorageData({
+                storages: ['cookies', 'localstorage', 'indexdb']
+              });
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'New Identity',
+                message: 'Your browser identity has been reset.\n\nAll permissions, cookies, and cache have been cleared.',
+                buttons: ['OK']
+              }).then(() => {
+                mainWindow?.reload();
+              });
+            }
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'Quit',
           accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
           click: () => {
             app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'I2P',
+      submenu: [
+        {
+          label: 'Postman HQ',
+          click: () => {
+            mainWindow?.loadURL('http://hq.postman.i2p');
+          }
+        },
+        {
+          label: 'Stats',
+          click: () => {
+            mainWindow?.loadURL('http://stats.i2p');
+          }
+        },
+        {
+          label: 'IRC',
+          click: () => {
+            mainWindow?.loadURL('http://irc.echelon.i2p');
+          }
+        },
+        {
+          label: 'Forum',
+          click: () => {
+            mainWindow?.loadURL('http://i2pforum.i2p');
           }
         }
       ]
@@ -111,6 +190,18 @@ function createMenu(): void {
           click: () => {
             configManager.setSecurityLevel('Safest');
             updateSecurityMenu();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Toggle JavaScript (Current Site)',
+          accelerator: 'CmdOrCtrl+J',
+          click: () => {
+            if (mainWindow) {
+              const url = mainWindow.webContents.getURL();
+              permissionsManager.toggleJavaScript(url);
+              mainWindow.reload();
+            }
           }
         }
       ]
@@ -149,13 +240,141 @@ function updateSecurityMenu(): void {
   console.log('Security level changed to:', configManager.getSecurityLevel());
 }
 
+function setupIPCHandlers(): void {
+  ipcMain.handle('get-permissions', async (event, url: string) => {
+    if (typeof url !== 'string' || url.length === 0) {
+      return { javascript: true, canvas: false, fonts: false };
+    }
+    return permissionsManager.getPermissions(url);
+  });
+
+  ipcMain.handle('request-canvas-permission', async (event, url: string) => {
+    if (typeof url !== 'string' || url.length === 0 || !mainWindow) {
+      return false;
+    }
+    
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'question',
+      title: 'Canvas Read Request',
+      message: `A website wants to read canvas data.\n\nURL: ${url}\n\nThis could be used for fingerprinting.`,
+      buttons: ['Block', 'Allow Once', 'Always Allow'],
+      defaultId: 0
+    });
+    
+    const allowed = result.response > 0;
+    
+    if (result.response === 2) {
+      permissionsManager.setPermission(url, 'canvas', true);
+    }
+    
+    if (allowed && mainWindow) {
+      mainWindow.webContents.send('set-canvas-permission', true);
+    }
+    
+    return allowed;
+  });
+
+  ipcMain.handle('request-font-permission', async (event, url: string) => {
+    if (typeof url !== 'string' || url.length === 0 || !mainWindow) {
+      return false;
+    }
+    
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'question',
+      title: 'Font Access Request',
+      message: `A website wants to access system fonts.\n\nURL: ${url}\n\nThis could be used for fingerprinting.`,
+      buttons: ['Block', 'Allow Once', 'Always Allow'],
+      defaultId: 0
+    });
+    
+    const allowed = result.response > 0;
+    
+    if (result.response === 2) {
+      permissionsManager.setPermission(url, 'fonts', true);
+    }
+    
+    if (allowed && mainWindow) {
+      mainWindow.webContents.send('set-font-permission', true);
+    }
+    
+    return allowed;
+  });
+
+  ipcMain.handle('toggle-javascript', async (event, url: string) => {
+    if (typeof url !== 'string' || url.length === 0) {
+      return false;
+    }
+    
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    
+    const newValue = permissionsManager.toggleJavaScript(url);
+    return newValue;
+  });
+
+  ipcMain.on('open-i2p-portal', (event, portal: string) => {
+    if (typeof portal !== 'string' || portal.length === 0) {
+      return;
+    }
+    
+    const allowedPortals: { [key: string]: string } = {
+      'postman': 'http://hq.postman.i2p',
+      'stats': 'http://stats.i2p',
+      'IRC': 'http://irc.echelon.i2p',
+      'forum': 'http://i2pforum.i2p'
+    };
+    
+    const url = allowedPortals[portal];
+    if (url && mainWindow) {
+      mainWindow.loadURL(url);
+    }
+  });
+
+  ipcMain.on('new-identity', () => {
+    permissionsManager.clearAllPermissions();
+    
+    if (mainWindow) {
+      mainWindow.webContents.session.clearCache();
+      mainWindow.webContents.session.clearStorageData({
+        storages: ['cookies', 'localstorage', 'indexdb']
+      });
+      
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'New Identity',
+        message: 'Your browser identity has been reset.\n\nAll permissions, cookies, and cache have been cleared.',
+        buttons: ['OK']
+      }).then(() => {
+        mainWindow?.reload();
+      });
+    }
+  });
+}
+
 configManager = new ConfigManager();
+permissionsManager = new PermissionsManager();
 
 applyI2PProxyFlags(4444, 4447);
 
 applyChromiumFlags();
 
 app.whenReady().then(async () => {
+  setupIPCHandlers();
   setContentSecurityPolicy();
   await applyProxySettings();
   

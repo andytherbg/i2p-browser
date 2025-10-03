@@ -40,9 +40,15 @@ jobs:
         shell: bash
         run: |
           cd release
-          for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
-            [ -f "$file" ] && sha256sum "$file" >> SHA256SUMS.txt
-          done
+          if command -v sha256sum >/dev/null 2>&1; then
+            for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
+              [ -f "$file" ] && sha256sum "$file" >> SHA256SUMS.txt
+            done
+          else
+            for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
+              [ -f "$file" ] && shasum -a 256 "$file" >> SHA256SUMS.txt
+            done
+          fi
       
       - name: Write signing key
         run: echo "${{ secrets.SIGNING_SECRET_KEY }}" > signing.key

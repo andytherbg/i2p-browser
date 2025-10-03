@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
 const config_1 = require("./config");
+const i2p_proxy_1 = require("./i2p-proxy");
 let mainWindow = null;
 let configManager;
 function applyChromiumFlags() {
@@ -87,6 +88,7 @@ function createWindow() {
         },
         title: 'I2P Browser'
     });
+    (0, i2p_proxy_1.enforceViewportBuckets)(mainWindow);
     mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -171,6 +173,7 @@ function updateSecurityMenu() {
     console.log('Security level changed to:', configManager.getSecurityLevel());
 }
 configManager = new config_1.ConfigManager();
+(0, i2p_proxy_1.applyI2PProxyFlags)(4444, 4447);
 applyChromiumFlags();
 electron_1.app.whenReady().then(async () => {
     setContentSecurityPolicy();

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "tsc && electron .",
     "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux"
@@ -30,13 +32,21 @@
       "target": "AppImage"
     }
   },
-  "keywords": ["i2p", "browser", "privacy", "security"],
+  "keywords": [
+    "i2p",
+    "browser",
+    "privacy",
+    "security"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.6.2",
     "electron": "^38.2.0",
     "electron-builder": "^26.0.12",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.4",
     "typescript": "^5.9.3"
   }
 }

@@ -23,10 +23,11 @@ export function configureI2PProxy(httpPort: number = 4444, socksPort: number = 4
     '--enforce-webrtc-ip-permission-check',
     '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
     
-    '--disable-features=WebBluetooth',
-    '--disable-features=WebUSB',
+    '--disable-features=WebBluetooth,WebUSB',
     
     '--block-new-web-contents',
+    
+    '--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE localhost',
     
     '--no-pings',
     

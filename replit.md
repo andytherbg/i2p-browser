@@ -26,6 +26,17 @@ I2P Browser is a privacy-focused desktop browser application built with Electron
 - **Test Page**: Comprehensive test page validating all privacy protections at runtime
 - **Test Commands**: `npm run test:e2e` for automated tests, `npm run test:all` for full test suite
 
+### Documentation
+- **docs/BUILD.md**: Comprehensive build instructions including deterministic Docker builds, cross-platform compilation, and reproducibility verification
+- **docs/THREAT_MODEL.md**: Complete threat model covering attack vectors, mitigations, security assumptions, and hardening checklist
+- **docs/CONTRIBUTING.md**: Contributor guidelines with development workflow, code style, testing requirements, and security review checklist
+- **docs/CODE_OF_CONDUCT.md**: Standard Contributor Covenant code of conduct for community participation
+
+### CI/CD Enhancements
+- **SBOM Generation**: CycloneDX software bill of materials published with each release
+- **Checksum Verification**: SHA256SUMS.txt for all build artifacts (cross-platform compatible)
+- **Multi-Platform Builds**: Automated builds for Windows (NSIS), macOS (DMG), and Linux (AppImage/deb) with signatures
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

@@ -107,10 +107,42 @@ export class AutoUpdater {
       const filename = path.basename(updateFile);
       const owner = process.env.GITHUB_OWNER || 'your-org';
       const repo = process.env.GITHUB_REPO || 'i2p-browser';
-      const signatureUrl = `https://github.com/${owner}/${repo}/releases/download/${info.version}/${filename}.sig`;
+      
+      let tagName = info.version;
+      if (info.files && info.files.length > 0 && info.files[0].url) {
+        const match = info.files[0].url.match(/\/releases\/download\/([^/]+)\//);
+        if (match) {
+          tagName = match[1];
+        }
+      }
+      
       const signaturePath = path.join(app.getPath('temp'), `${filename}.sig`);
       
-      await this.downloadFileWithRedirects(signatureUrl, signaturePath);
+      let signatureDownloaded = false;
+      const tagsToTry = [
+        tagName,
+        tagName.startsWith('v') ? tagName.substring(1) : `v${tagName}`
+      ];
+      
+      for (const tag of tagsToTry) {
+        try {
+          const signatureUrl = `https://github.com/${owner}/${repo}/releases/download/${tag}/${filename}.sig`;
+          await this.downloadFileWithRedirects(signatureUrl, signaturePath);
+          if (fs.existsSync(signaturePath)) {
+            signatureDownloaded = true;
+            break;
+          }
+        } catch (error) {
+          console.log(`Failed to download signature with tag ${tag}, trying next...`);
+        }
+      }
+      
+      if (!signatureDownloaded) {
+        await this.downloadFileWithRedirects(
+          `https://github.com/${owner}/${repo}/releases/download/${tagName}/${filename}.sig`,
+          signaturePath
+        );
+      }
       
       if (!fs.existsSync(signaturePath)) {
         console.error('Signature file not found');

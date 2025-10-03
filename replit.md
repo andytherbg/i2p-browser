@@ -37,6 +37,7 @@ I2P Browser is a privacy-focused desktop browser application built with Electron
 - **SBOM Generation**: CycloneDX software bill of materials published with each release
 - **Checksum Verification**: SHA256SUMS.txt for all build artifacts (cross-platform compatible)
 - **Multi-Platform Builds**: Automated builds for Windows (NSIS), macOS (DMG), and Linux (AppImage/deb) with signatures
+- **Application Icon**: 512×512px square PNG with centered I2P logo and transparent padding, auto-converted by electron-builder to platform-specific formats (.ico for Windows, .icns for macOS)
 
 ## User Preferences
 

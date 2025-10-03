@@ -57,16 +57,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "electron-updater": "^6.6.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
     "@playwright/test": "^1.55.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.6.2",
     "electron": "^38.2.0",
     "electron-builder": "^26.0.12",
-    "electron-updater": "^6.6.2",
     "jest": "^30.2.0",
     "playwright": "^1.55.1",
     "ts-jest": "^29.4.4",
-    "tweetnacl": "^1.0.3",
     "typescript": "^5.9.3"
   }
 }

@@ -4,7 +4,7 @@
   "description": "I2P Browser - A secure browser with configurable security levels",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "tsc && electron .",
+    "dev": "chmod +x run-electron.sh && ./run-electron.sh",
     "build": "tsc",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",

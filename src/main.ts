@@ -5,6 +5,30 @@ import { ConfigManager, SecurityLevel } from './config';
 let mainWindow: BrowserWindow | null = null;
 let configManager: ConfigManager;
 
+function applyChromiumFlags(): void {
+  const prefs = configManager.getPreferences();
+  prefs.chromiumFlags.forEach(flag => {
+    const [key, value] = flag.split('=');
+    if (value) {
+      app.commandLine.appendSwitch(key, value);
+    } else {
+      app.commandLine.appendSwitch(flag);
+    }
+  });
+  console.log('Applied Chromium flags:', prefs.chromiumFlags);
+}
+
+async function applyProxySettings(): Promise<void> {
+  const prefs = configManager.getPreferences();
+  if (prefs.proxySettings.enabled) {
+    const proxyConfig = {
+      proxyRules: `${prefs.proxySettings.type}://${prefs.proxySettings.host}:${prefs.proxySettings.port}`
+    };
+    await session.defaultSession.setProxy(proxyConfig);
+    console.log('Applied proxy settings:', proxyConfig);
+  }
+}
+
 function setContentSecurityPolicy(): void {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -122,10 +146,13 @@ function updateSecurityMenu(): void {
   console.log('Security level changed to:', configManager.getSecurityLevel());
 }
 
-app.whenReady().then(() => {
-  configManager = new ConfigManager();
-  
+configManager = new ConfigManager();
+
+applyChromiumFlags();
+
+app.whenReady().then(async () => {
   setContentSecurityPolicy();
+  await applyProxySettings();
   
   createWindow();
   createMenu();

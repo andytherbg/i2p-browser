@@ -4,3 +4,27 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["glib", "gtk3", "libnotify", "nss", "xorg.libXScrnSaver", "xorg.libXtst", "xdg-utils", "at-spi2-atk", "mesa", "alsa-lib", "cups", "libdrm", "libxkbcommon", "xorg.libxcb", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr", "pango", "cairo", "dbus", "xorg.xorgserver"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "I2P Browser"
+
+[[workflows.workflow]]
+name = "I2P Browser"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[workflows.workflow.metadata]
+outputType = "vnc"

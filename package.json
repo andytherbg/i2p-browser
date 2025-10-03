@@ -1,6 +1,6 @@
 {
   "name": "i2p-browser",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "I2P Browser - A secure browser with configurable security levels",
   "main": "dist/main.js",
   "scripts": {
@@ -53,7 +53,7 @@
     "privacy",
     "security"
   ],
-  "author": "",
+  "author": "Andy <andytherbg@users.noreply.github.com>",
   "license": "ISC",
   "dependencies": {
     "electron-updater": "^6.6.2",

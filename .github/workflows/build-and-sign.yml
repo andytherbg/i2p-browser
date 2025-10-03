@@ -33,6 +33,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Generate SBOM
+        run: npx @cyclonedx/cyclonedx-npm --output-file release/sbom.json
+      
+      - name: Generate checksums
+        shell: bash
+        run: |
+          cd release
+          for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
+            [ -f "$file" ] && sha256sum "$file" >> SHA256SUMS.txt
+          done
+      
       - name: Write signing key
         run: echo "${{ secrets.SIGNING_SECRET_KEY }}" > signing.key
         
@@ -53,10 +64,13 @@ jobs:
             release/*.exe
             release/*.dmg
             release/*.AppImage
+            release/*.deb
             release/*.zip
             release/*.sig
             release/manifest.json
             release/manifest.json.sig
+            release/sbom.json
+            release/SHA256SUMS.txt
           retention-days: 30
   
   create-release:

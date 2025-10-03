@@ -351,7 +351,7 @@ Thank you for helping make I2P Browser more private and secure!
 
 If you have questions not covered here:
 1. Check existing [documentation](../README.md)
-2. Search [closed issues](https://github.com/your-org/i2p-browser/issues?q=is%3Aissue+is%3Aclosed)
-3. Ask in a new [discussion](https://github.com/your-org/i2p-browser/discussions)
+2. Search [closed issues](https://github.com/andytherbg/i2p-browser/issues?q=is%3Aissue+is%3Aclosed)
+3. Ask in a new [discussion](https://github.com/andytherbg/i2p-browser/discussions)
 
 We appreciate your contributions! 🎉

@@ -10,7 +10,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/i2p-browser.git
+git clone https://github.com/andytherbg/i2p-browser.git
 cd i2p-browser
 
 # Install dependencies

@@ -4,6 +4,8 @@
 
 I2P Browser is a privacy-focused desktop browser application built with Electron and TypeScript. It provides configurable security levels and proxy support specifically designed for I2P network browsing. The application features advanced anti-fingerprinting protections including per-site JavaScript control, canvas fingerprinting protection, font access control, and WebRTC blocking. Users can customize Chromium flags, configure proxy settings, and enforce Content Security Policies to enhance privacy and security.
 
+**Repository:** https://github.com/andytherbg/i2p-browser (Public)
+
 ## Recent Changes (October 2025)
 
 ### Advanced Privacy Features

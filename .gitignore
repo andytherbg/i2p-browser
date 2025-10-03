@@ -4,3 +4,5 @@ release/
 *.log
 .DS_Store
 Thumbs.db
+coverage/
+.jest-cache/

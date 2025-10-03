@@ -1,6 +1,6 @@
 {
   "name": "i2p-browser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "I2P Browser - A secure browser with configurable security levels",
   "main": "dist/main.js",
   "scripts": {

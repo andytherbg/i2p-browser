@@ -36,8 +36,7 @@
       "repo": "i2p-browser"
     },
     "win": {
-      "target": "nsis",
-      "publisherName": "I2P Browser"
+      "target": "nsis"
     },
     "mac": {
       "target": "dmg",

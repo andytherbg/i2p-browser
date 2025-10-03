@@ -106,9 +106,38 @@ window.addEventListener('DOMContentLoaded', async () => {
   window.postMessage({ type: 'font-permission-update', allowed: permissions.fonts }, '*');
 });
 
+ipcRenderer.on('update-available', (_event, info) => {
+  window.dispatchEvent(new CustomEvent('update-available', { detail: info }));
+});
+
+ipcRenderer.on('update-download-progress', (_event, progress) => {
+  window.dispatchEvent(new CustomEvent('update-download-progress', { detail: progress }));
+});
+
+ipcRenderer.on('update-ready', (_event, info) => {
+  window.dispatchEvent(new CustomEvent('update-ready', { detail: info }));
+});
+
+ipcRenderer.on('update-error', (_event, error) => {
+  window.dispatchEvent(new CustomEvent('update-error', { detail: error }));
+});
+
+ipcRenderer.on('i2pd-update-available', (_event, info) => {
+  window.dispatchEvent(new CustomEvent('i2pd-update-available', { detail: info }));
+});
+
+ipcRenderer.on('i2pd-update-ready', (_event, info) => {
+  window.dispatchEvent(new CustomEvent('i2pd-update-ready', { detail: info }));
+});
+
 contextBridge.exposeInMainWorld('i2pBrowser', {
   version: process.versions.electron,
   toggleJavaScript: (url: string) => ipcRenderer.invoke('toggle-javascript', url),
   openI2PPortal: (portal: string) => ipcRenderer.send('open-i2p-portal', portal),
-  newIdentity: () => ipcRenderer.send('new-identity')
+  newIdentity: () => ipcRenderer.send('new-identity'),
+  checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.send('download-update'),
+  installUpdate: () => ipcRenderer.send('install-update'),
+  checkI2pdUpdate: () => ipcRenderer.send('check-i2pd-update'),
+  downloadI2pdUpdate: (version: string) => ipcRenderer.invoke('download-i2pd-update', version)
 });

@@ -3,10 +3,12 @@ import * as path from 'path';
 import { ConfigManager, SecurityLevel } from './config';
 import { applyI2PProxyFlags, enforceViewportBuckets } from './i2p-proxy';
 import { PermissionsManager } from './permissions';
+import { AutoUpdater } from './auto-updater';
 
 let mainWindow: BrowserWindow | null = null;
 let configManager: ConfigManager;
 let permissionsManager: PermissionsManager;
+let updater: AutoUpdater;
 
 function applyChromiumFlags(): void {
   const prefs = configManager.getPreferences();
@@ -364,6 +366,37 @@ function setupIPCHandlers(): void {
       });
     }
   });
+
+  ipcMain.on('check-for-updates', () => {
+    if (updater) {
+      updater.checkForUpdates();
+    }
+  });
+
+  ipcMain.on('download-update', () => {
+    if (updater) {
+      updater.downloadUpdate();
+    }
+  });
+
+  ipcMain.on('install-update', () => {
+    if (updater) {
+      updater.installUpdate();
+    }
+  });
+
+  ipcMain.on('check-i2pd-update', () => {
+    if (updater) {
+      updater.checkForI2pdUpdate();
+    }
+  });
+
+  ipcMain.handle('download-i2pd-update', async (event, version: string) => {
+    if (updater && typeof version === 'string') {
+      return await updater.downloadI2pdUpdate(version);
+    }
+    return false;
+  });
 }
 
 configManager = new ConfigManager();
@@ -380,6 +413,18 @@ app.whenReady().then(async () => {
   
   createWindow();
   createMenu();
+
+  if (mainWindow) {
+    updater = new AutoUpdater(mainWindow);
+    if (!app.isPackaged) {
+      console.log('Development mode: auto-update disabled');
+    } else {
+      setTimeout(() => {
+        updater.checkForUpdates();
+        updater.checkForI2pdUpdate();
+      }, 3000);
+    }
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -11,9 +11,12 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test && npm run test:e2e",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "generate-keys": "node scripts/generate-keys.js",
+    "sign-release": "node scripts/sign-release.js"
   },
   "build": {
     "appId": "com.i2pbrowser.app",
@@ -25,14 +28,22 @@
       "dist/**/*",
       "src/index.html"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "your-org",
+      "repo": "i2p-browser"
+    },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "publisherName": "I2P Browser"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "category": "public.app-category.utilities"
     },
     "linux": {
-      "target": "AppImage"
+      "target": ["AppImage", "deb"],
+      "category": "Network"
     }
   },
   "keywords": [
@@ -49,9 +60,11 @@
     "@types/node": "^24.6.2",
     "electron": "^38.2.0",
     "electron-builder": "^26.0.12",
+    "electron-updater": "^6.6.2",
     "jest": "^30.2.0",
     "playwright": "^1.55.1",
     "ts-jest": "^29.4.4",
+    "tweetnacl": "^1.0.3",
     "typescript": "^5.9.3"
   }
 }

@@ -38,9 +38,11 @@ const path = __importStar(require("path"));
 const config_1 = require("./config");
 const i2p_proxy_1 = require("./i2p-proxy");
 const permissions_1 = require("./permissions");
+const auto_updater_1 = require("./auto-updater");
 let mainWindow = null;
 let configManager;
 let permissionsManager;
+let updater;
 function applyChromiumFlags() {
     const prefs = configManager.getPreferences();
     prefs.chromiumFlags.forEach(flag => {
@@ -363,6 +365,32 @@ function setupIPCHandlers() {
             });
         }
     });
+    electron_1.ipcMain.on('check-for-updates', () => {
+        if (updater) {
+            updater.checkForUpdates();
+        }
+    });
+    electron_1.ipcMain.on('download-update', () => {
+        if (updater) {
+            updater.downloadUpdate();
+        }
+    });
+    electron_1.ipcMain.on('install-update', () => {
+        if (updater) {
+            updater.installUpdate();
+        }
+    });
+    electron_1.ipcMain.on('check-i2pd-update', () => {
+        if (updater) {
+            updater.checkForI2pdUpdate();
+        }
+    });
+    electron_1.ipcMain.handle('download-i2pd-update', async (event, version) => {
+        if (updater && typeof version === 'string') {
+            return await updater.downloadI2pdUpdate(version);
+        }
+        return false;
+    });
 }
 configManager = new config_1.ConfigManager();
 permissionsManager = new permissions_1.PermissionsManager();
@@ -374,6 +402,18 @@ electron_1.app.whenReady().then(async () => {
     await applyProxySettings();
     createWindow();
     createMenu();
+    if (mainWindow) {
+        updater = new auto_updater_1.AutoUpdater(mainWindow);
+        if (!electron_1.app.isPackaged) {
+            console.log('Development mode: auto-update disabled');
+        }
+        else {
+            setTimeout(() => {
+                updater.checkForUpdates();
+                updater.checkForI2pdUpdate();
+            }, 3000);
+        }
+    }
     electron_1.app.on('activate', () => {
         if (electron_1.BrowserWindow.getAllWindows().length === 0) {
             createWindow();

@@ -7,11 +7,19 @@ I2P Browser is a privacy-focused desktop browser application built with Electron
 ## Recent Changes (October 2025)
 
 ### Advanced Privacy Features
-- **Per-Site JavaScript Toggle**: NoScript-lite functionality allowing users to enable/disable JavaScript per domain
-- **Canvas Fingerprinting Protection**: Intercepts canvas read operations (toDataURL, getImageData) with user consent dialogs
+- **Per-Site JavaScript Toggle**: NoScript-lite functionality with CSP-based blocking (script-src 'none') for complete inline/eval/network script prevention
+- **Canvas Fingerprinting Protection**: Intercepts canvas read operations (toDataURL, getImageData) with user consent dialogs, injected before page scripts via webFrame.executeJavaScript
 - **Font Access Control**: Restricts font enumeration to minimal list (Arial, Times New Roman, Courier New, Verdana) with permission prompts
 - **New Identity Function**: One-click clearing of all permissions, cookies, cache, and session data (Ctrl+Shift+N)
 - **I2P Portal Menu**: Quick access menu for common I2P sites (Postman HQ, Stats, IRC, Forum)
+
+### Auto-Update System
+- **Electron AutoUpdater**: GitHub Releases integration with automatic update checking on app start
+- **Ed25519 Signature Verification**: All app updates verified with tweetnacl before installation using embedded public key
+- **Non-Intrusive UI**: Bottom-right notification panel with download progress and install controls
+- **i2pd Binary Updates**: Separate update mechanism for i2pd daemon with checksum verification
+- **Signing Infrastructure**: Scripts for Ed25519 key generation, release signing (SHA256 + signature), and automated CI workflow
+- **Multi-Platform Builds**: GitHub Actions workflow builds and signs for Windows (NSIS), macOS (DMG), and Linux (AppImage/deb)
 
 ### Testing Infrastructure
 - **E2E Tests**: Playwright-based end-to-end tests verifying WebRTC unavailability, canvas blocking, and minimal font list

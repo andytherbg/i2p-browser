@@ -21,20 +21,41 @@ if (!fs.existsSync(releaseDir)) {
   process.exit(1);
 }
 
+function findReleaseFiles(dir) {
+  let files = [];
+  
+  function walk(directory) {
+    const items = fs.readdirSync(directory);
+    
+    for (const item of items) {
+      const fullPath = path.join(directory, item);
+      const stat = fs.statSync(fullPath);
+      
+      if (stat.isDirectory()) {
+        walk(fullPath);
+      } else if (item.endsWith('.exe') || item.endsWith('.dmg') || 
+                 item.endsWith('.AppImage') || item.endsWith('.deb') || item.endsWith('.zip')) {
+        files.push(fullPath);
+      }
+    }
+  }
+  
+  walk(dir);
+  return files;
+}
+
 const manifestData = {
   version: require('../package.json').version,
   files: {},
   timestamp: new Date().toISOString()
 };
 
-const files = fs.readdirSync(releaseDir).filter(f => {
-  return f.endsWith('.exe') || f.endsWith('.dmg') || f.endsWith('.AppImage') || f.endsWith('.zip');
-});
+const files = findReleaseFiles(releaseDir);
 
 console.log(`Signing ${files.length} release files...\n`);
 
-files.forEach(file => {
-  const filePath = path.join(releaseDir, file);
+files.forEach(filePath => {
+  const file = path.basename(filePath);
   const fileData = fs.readFileSync(filePath);
   
   const hash = crypto.createHash('sha256').update(fileData).digest('hex');
@@ -68,7 +89,8 @@ fs.writeFileSync(
 console.log('\nSigning complete!');
 console.log('Manifest created:', manifestPath);
 console.log('\nFiles ready for distribution:');
-files.forEach(file => {
+files.forEach(filePath => {
+  const file = path.basename(filePath);
   console.log(`  - ${file}`);
   console.log(`  - ${file}.sig`);
 });

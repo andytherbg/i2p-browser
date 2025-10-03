@@ -69,7 +69,7 @@ jobs:
       - name: Sign releases
         run: |
           npm ci
-          node scripts/sign-release.js
+          node scripts/sign-release.js artifacts
         env:
           SECRET_KEY_PATH: ./signing.key
       

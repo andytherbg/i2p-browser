@@ -15,11 +15,12 @@ I2P Browser is a privacy-focused desktop browser application built with Electron
 
 ### Auto-Update System
 - **Electron AutoUpdater**: GitHub Releases integration with automatic update checking on app start
-- **Ed25519 Signature Verification**: All app updates verified with tweetnacl before installation using embedded public key
+- **Ed25519 Signature Verification**: All app updates verified with tweetnacl before installation using embedded public key, with robust tag resolution supporting both "vX.Y.Z" and "X.Y.Z" formats
 - **Non-Intrusive UI**: Bottom-right notification panel with download progress and install controls
 - **i2pd Binary Updates**: Separate update mechanism for i2pd daemon with checksum verification
 - **Signing Infrastructure**: Scripts for Ed25519 key generation, release signing (SHA256 + signature), and automated CI workflow
 - **Multi-Platform Builds**: GitHub Actions workflow builds and signs for Windows (NSIS), macOS (DMG), and Linux (AppImage/deb)
+- **Tag Resolution**: Extracts actual release tag from update metadata with fallback logic for different tagging conventions
 
 ### Testing Infrastructure
 - **E2E Tests**: Playwright-based end-to-end tests verifying WebRTC unavailability, canvas blocking, and minimal font list

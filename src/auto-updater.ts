@@ -23,7 +23,7 @@ export class AutoUpdater {
 
     autoUpdater.setFeedURL({
       provider: 'github',
-      owner: process.env.GITHUB_OWNER || 'your-org',
+      owner: process.env.GITHUB_OWNER || 'andytherbg',
       repo: process.env.GITHUB_REPO || 'i2p-browser',
       private: false
     });
@@ -105,7 +105,7 @@ export class AutoUpdater {
       }
 
       const filename = path.basename(updateFile);
-      const owner = process.env.GITHUB_OWNER || 'your-org';
+      const owner = process.env.GITHUB_OWNER || 'andytherbg';
       const repo = process.env.GITHUB_REPO || 'i2p-browser';
       
       let tagName = info.version;

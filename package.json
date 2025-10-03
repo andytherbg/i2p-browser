@@ -32,7 +32,7 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "your-org",
+      "owner": "andytherbg",
       "repo": "i2p-browser"
     },
     "win": {

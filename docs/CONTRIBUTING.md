@@ -11,7 +11,7 @@ All contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md). We are c
 ### Reporting Bugs
 
 Before creating a bug report:
-- Check the [issue tracker](https://github.com/your-org/i2p-browser/issues) for duplicates
+- Check the [issue tracker](https://github.com/andytherbg/i2p-browser/issues) for duplicates
 - Verify the bug exists in the latest release
 - Test with a clean profile (New Identity)
 
@@ -33,7 +33,7 @@ Feature requests should:
 - Be technically feasible with Electron/Chromium
 - Include use cases and user stories
 
-Open a [feature request issue](https://github.com/your-org/i2p-browser/issues/new?template=feature_request.md) with:
+Open a [feature request issue](https://github.com/andytherbg/i2p-browser/issues/new?template=feature_request.md) with:
 - Clear description of the proposed feature
 - Privacy/security implications
 - Alternative solutions considered
@@ -64,7 +64,7 @@ nvm install 20
 nvm use 20
 
 # Clone the repository
-git clone https://github.com/your-org/i2p-browser.git
+git clone https://github.com/andytherbg/i2p-browser.git
 cd i2p-browser
 
 # Install dependencies

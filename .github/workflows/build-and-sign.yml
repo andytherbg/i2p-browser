@@ -28,40 +28,8 @@ jobs:
       - name: Build TypeScript
         run: npm run build
       
-      - name: Build Electron app
-        run: npm run dist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Generate SBOM
-        run: npx @cyclonedx/cyclonedx-npm --output-file release/sbom.json
-      
-      - name: Generate checksums
-        shell: bash
-        run: |
-          cd release
-          if command -v sha256sum >/dev/null 2>&1; then
-            for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
-              [ -f "$file" ] && sha256sum "$file" >> SHA256SUMS.txt
-            done
-          else
-            for file in *.exe *.dmg *.AppImage *.deb *.zip 2>/dev/null; do
-              [ -f "$file" ] && shasum -a 256 "$file" >> SHA256SUMS.txt
-            done
-          fi
-      
-      - name: Write signing key
-        run: echo "${{ secrets.SIGNING_SECRET_KEY }}" > signing.key
-        
-      - name: Sign releases
-        run: node scripts/sign-release.js
-        env:
-          SECRET_KEY_PATH: ./signing.key
-      
-      - name: Clean up signing key
-        if: always()
-        shell: bash
-        run: rm -f signing.key
+      - name: Build Electron app (no publish)
+        run: npm run build && npx electron-builder --publish never
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -73,11 +41,6 @@ jobs:
             release/*.AppImage
             release/*.deb
             release/*.zip
-            release/*.sig
-            release/manifest.json
-            release/manifest.json.sig
-            release/sbom.json
-            release/SHA256SUMS.txt
           retention-days: 30
   
   create-release:
@@ -86,10 +49,34 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+      
+      - name: Generate checksums
+        shell: bash
+        run: |
+          cd artifacts
+          find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" \) -exec sha256sum {} \; > SHA256SUMS.txt
+      
+      - name: Write signing key
+        run: echo "${{ secrets.SIGNING_SECRET_KEY }}" > signing.key
+        
+      - name: Sign releases
+        run: |
+          npm ci
+          node scripts/sign-release.js
+        env:
+          SECRET_KEY_PATH: ./signing.key
+      
+      - name: Clean up signing key
+        if: always()
+        shell: bash
+        run: rm -f signing.key
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
